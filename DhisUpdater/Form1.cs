@@ -55,7 +55,7 @@ namespace DnsUpdater
                 if (settings.DynsValid)
                 {
                     StringBuilder urlBuilder = new StringBuilder();
-                    urlBuilder.Append(String.Format("http://www.dyns.net/postscript011.php?username={0}&password={1}&host={2}",
+                    urlBuilder.Append(String.Format("http://www.dyns.cx/postscript011.php?username={0}&password={1}&host={2}",
                         settings.DynsUser, settings.DynsPassword, settings.DynsHostname));
                     if (settings.DynsDomain.Length > 0)
                         urlBuilder.Append("&domain=" + settings.DynsDomain);
