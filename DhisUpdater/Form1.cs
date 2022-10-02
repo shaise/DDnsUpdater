@@ -17,6 +17,8 @@ namespace DnsUpdater
         bool minimize = false;
         bool errorShown = false;
         CSettings settings;
+        string curip = "";
+        bool dhisOk = false, dynsOk = false;
         public Form1()
         {
             settings = new CSettings();
@@ -43,16 +45,27 @@ namespace DnsUpdater
             string data = "";
             try
             {
-                if (settings.DhisValid)
+                // first see if the ip was changed 
+                string ipurl = "http://icanhazip.com/";
+                string newip = wClient.DownloadString(ipurl);
+                if (newip != curip)
                 {
-                    string url = "http://is.dhis.org/?hostname=" + settings.DhisDomain + "&password=" + settings.DhisPassword + "&?updatetimeout=" + settings.DhisTimeout;
+                    dhisOk = false;
+                    dynsOk = false;
+                }
+                curip = newip;
+
+                if (settings.DhisValid && !dhisOk)
+                {
+                    string url = "http://is.dhis.org/?updatetimeout=" + settings.DhisTimeout + "&hostname=" + settings.DhisDomain + "&password=" + settings.DhisPassword;
                     //DhisStatus.Text = url;
                     data = wClient.DownloadString(url);
                     string[] vars = data.Split(' ');
                     data = vars[0] + " " + vars[1] + " " + vars[2];
                     DhisStatus.Text = "Dhis: " + DateTime.Now.ToString("h:mm:ss tt") + ": " + data;
+                    dhisOk = data.IndexOf("OK") >= 0;
                 }
-                if (settings.DynsValid)
+                if (settings.DynsValid && !dynsOk)
                 {
                     StringBuilder urlBuilder = new StringBuilder();
                     urlBuilder.Append(String.Format("http://www.dyns.cx/postscript011.php?username={0}&password={1}&host={2}",
@@ -65,8 +78,10 @@ namespace DnsUpdater
                     //string[] vars = data.Split(' ');
                     //data = vars[0] + " " + vars[1] + " " + vars[2];
                     DynsStatus.Text = "Dyns: " + DateTime.Now.ToString("h:mm:ss tt") + ": " + data;
+                    dynsOk = data.IndexOf("updated") >= 0;
                 }
                 errorShown = false;
+
             }
             catch (Exception ex)
             {
